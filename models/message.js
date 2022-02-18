@@ -2,6 +2,7 @@
 const {Sequelize,DataTypes, database} = require('../config/connexion');
 
 const Message= database.define('Message', {
+        userId: DataTypes.INTEGER, 
         youtube: DataTypes.STRING,
         contentImg: DataTypes.STRING,
         contentText: DataTypes.TEXT,

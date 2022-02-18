@@ -1,7 +1,8 @@
-const { Message, Comment } = require('../models/map');
+const { Message, Like } = require('../models/map');
 const messagesValidation = require('../config/validation/messagesValidation');
 const config = require('../config/auth.config');
 const jwt = require('jsonwebtoken');
+const { secret } = require('../config/auth.config');
 
 /**************************************************************/
 /************************Messages************************/
@@ -17,7 +18,7 @@ const createOne = (req, res) =>{
 
     if (error) return res.status(401).json(error.details[0].message)
     Message.create({
-        UserId: getUserId,
+        userId: getUserId,
         youtube: (req.body.youtube ? `${req.body.youtube}` : null),
         contentImg: (req.body.contentImg ? `${req.body.contentImg}` : null),
         contentText: req.body.contentText
@@ -86,38 +87,66 @@ const deleteOne = (req, res) =>{
     .catch(error => res.status(500).json(error))
 }
 
-/**************************************************************/
-/************************Commentaires************************/
-/*************************************************************/
-
-////// Commenter un message //////
-const postComment = async (req, res) => {
-   
-    try {
-        const token = req.headers.authorization.split(' ')[1];
-        const decodedToken = jwt.verify(token, config.secret);
-        const user = decodedToken.userId;
-		let content = req.body.content;
-		const newCom = await Comment.create({
-            userId: user,
-            postId: req.params.id,
-            content: content
-		});
-
-		if (newCom) {
-			res.status(201).json({ message: "Votre commentaire a été publié", newCom });
-		} else {
-			throw new Error("Une erreur est survenue.");
-		}
-	} catch (error) {
-		res.status(400).json({ error: error.message });
-	}
-};
-
 
 /**************************************************************/
 /************************Likes************************/
 /*************************************************************/
 
+const likeOne = (req, res, next) => {
+    const token = req.headers.authorization.split(' ')[1];
+    const decodedToken = jwt.verify(token, config.secret);
+    const user = decodedToken.userId;
 
-module.exports = { createOne, getAll, getOne, updateOne, deleteOne, postComment }
+    const postId = req.params.id;
+    const like = req.body.likes;
+
+    if (like === 1){
+      Like.findOrCreate({ where : { postId: postId, userId: user } })
+      .then (([like, isNotPresent])=> {
+        if(isNotPresent) {
+          Message.findOne({ where: { id: postId } })//On sélectionne le post par son id
+            .then((post) => {
+              post.update({
+                likes: post.likes +1,//on ajoute 1 au likes
+              }, { id: req.params.id })
+              .then(() => res.status(200).json({message: 'Vote positif !'}))
+              .catch(error => res.status(400).json({error}))
+            })
+        } else {
+          res.status(400).json({message:"Déjà liké !"})
+        }
+      })
+      .catch(error => res.status(400).json({error}))
+    }else {
+      Message.findOne({ where: { id: postId } })//On sélectionne le post par son id
+      .then((post) => {
+        Like.findOne ({ where: { userId: user, postId: postId } })
+        .then ((likeRes)=>{
+          if(likeRes !== null) {
+            Like.destroy ( { where: { userId: user, postId:postId } }),
+              post.update({
+                likes: post.likes - 1,//on retire 1 à likes
+              }, { id: req.params.id })
+                .then(() => res.status(200).json({message: 'Like réinitialisé !'}))
+                .catch(error => res.status(400).json({error}))
+          } else {
+            throw {message: 'Vous avez déjà réinitialisé votre Like !'};
+          }
+        })
+        .catch(error => res.status(400).json({ error }));
+  
+      })
+      .catch(error => res.status(400).json({ error }));
+    }
+  };
+
+
+const getLike = (req, res, next) => {
+    Like.findAll({ where: { postId: req.params.id } })
+    .then(likes =>res.status(200).json(likes))
+    .catch(error => res.status(404).json({ error }));
+  };
+  
+
+
+module.exports = { createOne, getAll, getOne, updateOne, deleteOne, likeOne, getLike}
