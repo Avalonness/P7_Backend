@@ -53,5 +53,14 @@ const deleteCommentOne = (req, res, next) => {
    
   };
 
+  const getComment = (req, res) => {
+    const id = req.params.id
 
-  module.exports = { postComment, deleteCommentOne}
+      Comment.findOne({ where : {postId : id }})
+      .then((comments) => res.status(200).json(comments))
+      .catch(error => res.status(500).json({ error }))
+    
+  }
+
+
+  module.exports = { postComment, deleteCommentOne, getComment}
