@@ -8,7 +8,7 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      postId: {
+      MessageId: {
         allowNull: false,
         onDelete: 'CASCADE',
         type: Sequelize.INTEGER,

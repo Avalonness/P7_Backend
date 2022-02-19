@@ -18,7 +18,7 @@ const postComment = async (req, res) => {
     if (content !== null) {
       Comment.create ({
         userId: user,
-        postId: postId,
+        MessageId: postId,
         content: req.body.content
       }),
       Message.findOne({ where: { id: postId } })//On sélectionne le post par son id
@@ -56,7 +56,7 @@ const deleteCommentOne = (req, res, next) => {
   const getComment = (req, res) => {
     const id = req.params.id
 
-      Comment.findOne({ where : {postId : id }})
+      Comment.findAll({ where : {MessageId : id }})
       .then((comments) => res.status(200).json(comments))
       .catch(error => res.status(500).json({ error }))
     
