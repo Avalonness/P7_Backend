@@ -1,4 +1,4 @@
-const { Message, Like } = require('../models/map');
+const { Message, Like, User } = require('../models/map');
 const messagesValidation = require('../config/validation/messagesValidation');
 const config = require('../config/auth.config');
 const jwt = require('jsonwebtoken');
@@ -20,7 +20,7 @@ const createOne = (req, res) =>{
     Message.create({
         userId: getUserId,
         youtube: (req.body.youtube ? `${req.body.youtube}` : null),
-        contentImg: (req.body.contentImg ? `${req.body.contentImg}` : null),
+        contentImg: (req.file ? `${req.protocol}://${req.get('host')}/images/posts/${req.file.filename}` : null), //Gestion de l'image par multer
         contentText: req.body.contentText
     })
     .then(() => res.status(201).json({msg : "Element créer"}))
@@ -29,7 +29,7 @@ const createOne = (req, res) =>{
 
 
 ////// Trouver tous les messages //////
-const getAll = (req, res) =>{
+const getAll = (req, res, next) =>{
     Message.findAll({
         attributes: {exclude : ["updatedAt"]}
     })
@@ -41,7 +41,7 @@ const getAll = (req, res) =>{
 
 
 ////// Trouver un message //////
-const getOne = (req, res) =>{
+const getOne = (req, res, next) =>{
     const {id} = req.params
     Message.findByPk(id, {
         attributes: {exclude : ["updatedAt"]}
@@ -62,6 +62,11 @@ const updateOne = (req, res) =>{
     Message.findByPk(id)
     .then(message => {
         if(!message) return res.status(404).json({msg: "Message inexistant"})
+
+        if (message.image !== null){
+          const fileName = message.image.split('/images')[1]
+          fs.unlink(`images/${fileName}`)
+          }
 
         message.youtube = (req.body.youtube ? `${req.body.youtube}` : null)
         message.contentImg = (req.body.contentImg ? `${req.body.contentImg}` : null),
@@ -143,10 +148,32 @@ const likeOne = (req, res, next) => {
 
 const getLike = (req, res, next) => {
     Like.findAll({ where: { postId: req.params.id } })
-    .then(likes =>res.status(200).json(likes))
+    .then(likes => res.status(200).json(likes))
     .catch(error => res.status(404).json({ error }));
   };
+
+const getUser = (req, res) => {
+  User.findAll({
+    attributes: {exclude : ["password"]}
+})
+.then(users =>
+    res.status(200).json(users))
+.catch(error => res.status(500).json(error))
+}
+
+const getUserOne = (req, res) => {
+  const token = req.headers.authorization.split(' ')[1];
+    const decodedToken = jwt.verify(token, config.secret);
+    const user = decodedToken.userId;
+
+  User.findOne({where : {id : user}}, {
+        attributes: {exclude : ["password"]}
+    } )
+.then(users =>
+    res.status(200).json(users))
+.catch(error => res.status(500).json(error))
+}
   
 
 
-module.exports = { createOne, getAll, getOne, updateOne, deleteOne, likeOne, getLike}
+module.exports = { createOne, getAll, getOne, updateOne, deleteOne, likeOne, getLike, getUser, getUserOne}

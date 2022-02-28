@@ -70,6 +70,4 @@ const signup = (req, res, next) => {
     })
     .catch(error => res.status(500).json(error))
 }
-  
-
-  module.exports = { signup, login }
+  module.exports = { signup, login}

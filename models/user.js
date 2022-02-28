@@ -13,6 +13,8 @@ const User = database.define('User', {
         unique: true
     },
     password: DataTypes.STRING,
+    profilImg: DataTypes.STRING,
+
 }, {
     Sequelize,
     modelName: 'User',
