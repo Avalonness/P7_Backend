@@ -3,6 +3,7 @@ const path = require('path');
 const app = express();
 const routes = require('./routes/routes.js');
 const users = require('./routes/users');
+const bodyParser = require('body-parser')
 
 app.use(express.json());
 
@@ -13,6 +14,9 @@ app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
     next();
   });
+
+//transformer le body en json object
+app.use(bodyParser.json());
 
   app.use(routes)
   app.use(users)
