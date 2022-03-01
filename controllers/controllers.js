@@ -18,35 +18,35 @@ const createOne = (req, res) =>{
     const decodedToken = jwt.verify(token, config.secret);
     const getUserId = decodedToken.userId;
 
-  //   if (error) return res.status(401).json(error.details[0].message)
-  //   if (req.body.youtube !== "null") {
-  //      Message.create({
-  //         userId: getUserId,
-  //         youtube: (req.body.youtube ? `${req.body.youtube}` : null),
-  //         contentText: req.body.contentText
-  //         })
-  //         .then(() => res.status(201).json({msg : "Element youtube créer"}))
-  //         .catch(error => res.status(500).json(error))
-  //   }
+    // if (error) return res.status(401).json(error.details[0].message)
+    if (req.body.youtube !== "null") {
+       Message.create({
+          userId: getUserId,
+          youtube: (req.body.youtube ? `${req.body.youtube}` : null),
+          contentText: req.body.contentText
+          })
+          .then(() => res.status(201).json({msg : "Element youtube créer"}))
+          .catch(error => res.status(500).json(error))
+    }
 
-  //   if (req.body.youtube === "null" && req.body.contentText) {
-  //     Message.create({
-  //        userId: getUserId,
-  //        contentText: req.body.contentText
-  //        })
-  //        .then(() => res.status(201).json({msg : "Element basique créer"}))
-  //        .catch(error => res.status(500).json(error))
-  //  }
+    if (req.body.youtube === "null" && req.file === "null") {
+      Message.create({
+         userId: getUserId,
+         contentText: req.body.contentText
+         })
+         .then(() => res.status(201).json({msg : "Element basique créer"}))
+         .catch(error => res.status(500).json(error))
+   }
 
-  //  if (req.file !== "null") {
-  //   Message.create({
-  //      userId: getUserId,
-  //      contentImg: req.file,
-  //      contentText: req.body.contentText
-  //      })
-  //      .then(() => res.status(201).json({msg : "Element media créer"}))
-  //      .catch(error => res.status(500).json(error))
-//  }
+   if (req.file !== "null") {
+    Message.create({
+       userId: getUserId,
+       contentImg: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`,
+       contentText: req.body.contentText
+       })
+       .then(() => res.status(201).json({msg : "Element media créer"}))
+       .catch(error => res.status(500).json(error))
+ }
 
 console.log(body)
 }
