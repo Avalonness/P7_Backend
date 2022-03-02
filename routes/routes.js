@@ -5,6 +5,7 @@ const {postComment, deleteCommentOne, getComment} = require('../controllers/comm
 const auth = require('../middleware/auth.js');
 const multer = require('../middleware/multer-config.js')
 
+
 router.post('/createOne', auth, multer, createOne)
 router.get('/', auth, getAll)
 router.get('/getOne/:id', auth, getOne)

@@ -21,4 +21,7 @@ app.use(bodyParser.json());
   app.use(routes)
   app.use(users)
 
+//Gérer les images
+app.use("/images", express.static(path.join(__dirname, "images")));
+
 module.exports = app;

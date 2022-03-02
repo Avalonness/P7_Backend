@@ -11,19 +11,19 @@ const { secret } = require('../config/auth.config');
 
 ////// Poster un message //////
 const createOne = (req, res) =>{
-  console.log(req.body)
+  console.log(req.file)
     const {body} = req
     const {error} = messagesValidation(body)
     const token = req.headers.authorization.split(' ')[1];
     const decodedToken = jwt.verify(token, config.secret);
     const getUserId = decodedToken.userId;
-    const image = (req.file !== null ? `${req.protocol}://${req.get('host')}/images/${req.file.filename}` : null)
+    const image = (req.file ? `${req.protocol}://${req.get('host')}/images/${req.file.filename}` : null)
 
     // if (error) return res.status(401).json(error.details[0].message)
     
        Message.create({
           userId: getUserId,
-          youtube: (req.body.youtube !== null ? `${req.body.youtube}` : null),
+          youtube: (req.body.youtube ? `${req.body.youtube}` : null),
           contentImg : image,
           contentText: req.body.contentText
           })
