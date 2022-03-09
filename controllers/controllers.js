@@ -11,7 +11,6 @@ const { secret } = require('../config/auth.config');
 
 ////// Poster un message //////
 const createOne = (req, res) =>{
-  console.log(req.file)
     const {body} = req
     const {error} = messagesValidation(body)
     const token = req.headers.authorization.split(' ')[1];
@@ -96,66 +95,6 @@ const deleteOne = (req, res) =>{
     .catch(error => res.status(500).json(error))
 }
 
-
-/**************************************************************/
-/************************Likes************************/
-/*************************************************************/
-
-const likeOne = (req, res, next) => {
-    const token = req.headers.authorization.split(' ')[1];
-    const decodedToken = jwt.verify(token, config.secret);
-    const user = decodedToken.userId;
-
-    const postId = req.params.id;
-    const like = req.body.likes;
-
-    if (like === 1){
-      Like.findOrCreate({ where : { postId: postId, userId: user } })
-      .then (([like, isNotPresent])=> {
-        if(isNotPresent) {
-          Message.findOne({ where: { id: postId } })//On sélectionne le post par son id
-            .then((post) => {
-              post.update({
-                likes: post.likes +1,//on ajoute 1 au likes
-              }, { id: req.params.id })
-              .then(() => res.status(200).json({message: 'Vote positif !'}))
-              .catch(error => res.status(400).json({error}))
-            })
-        } else {
-          res.status(400).json({message:"Déjà liké !"})
-        }
-      })
-      .catch(error => res.status(400).json({error}))
-    }else {
-      Message.findOne({ where: { id: postId } })//On sélectionne le post par son id
-      .then((post) => {
-        Like.findOne ({ where: { userId: user, postId: postId } })
-        .then ((likeRes)=>{
-          if(likeRes !== null) {
-            Like.destroy ( { where: { userId: user, postId:postId } }),
-              post.update({
-                likes: post.likes - 1,//on retire 1 à likes
-              }, { id: req.params.id })
-                .then(() => res.status(200).json({message: 'Like réinitialisé !'}))
-                .catch(error => res.status(400).json({error}))
-          } else {
-            throw {message: 'Vous avez déjà réinitialisé votre Like !'};
-          }
-        })
-        .catch(error => res.status(400).json({ error }));
-  
-      })
-      .catch(error => res.status(400).json({ error }));
-    }
-  };
-
-
-const getLike = (req, res, next) => {
-    Like.findAll({ where: { postId: req.params.id } })
-    .then(likes => res.status(200).json(likes))
-    .catch(error => res.status(404).json({ error }));
-  };
-
 const getUser = (req, res) => {
   User.findAll({
     attributes: {exclude : ["password"]}
@@ -180,4 +119,4 @@ const getUserOne = (req, res) => {
   
 
 
-module.exports = { createOne, getAll, getOne, updateOne, deleteOne, likeOne, getLike, getUser, getUserOne}
+module.exports = { createOne, getAll, getOne, updateOne, deleteOne, getUser, getUserOne}

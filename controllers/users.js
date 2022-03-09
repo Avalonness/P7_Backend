@@ -2,6 +2,7 @@ const bcrypt = require('bcrypt');
 const {User} = require('../models/map');
 const jwt = require('jsonwebtoken');
 const config = require('../config/auth.config');
+const fs = require('fs');
 
 const passwordValidator = require('password-validator');
 const schema = new passwordValidator(); 
@@ -70,4 +71,70 @@ const signup = (req, res, next) => {
     })
     .catch(error => res.status(500).json(error))
 }
-  module.exports = { signup, login}
+
+////// Supprimer un user //////
+const deleteUser = (req, res) =>{
+  const id = req.params.id
+  User.findOne({where: {id: id}})
+  .then(user => {
+    if (user.profilImg !== null) {
+      const fileName = user.profilImg.split('/images/avatars/')[1]
+      fs.unlink(`images/avatars/${fileName}`, (err => { //On supprime l'ancienne image
+        if (err) console.log(err);
+        else {
+          console.log("Image supprimée: " + fileName);
+        }
+      }))
+    }
+    user.destroy({where: {id: id}})
+      .then(() => res.status(200).json({
+        message: 'utilisateur supprimé !'
+      }))
+      .catch(error => res.status(400).json({
+        error
+      }));
+  })
+  .catch(error => res.status(500).json({
+    error
+  }));
+}
+
+const editUser = (req, res, next) => {
+  const id = req.params.id
+  const image = (req.file ? `${req.protocol}://${req.get('host')}/images/${req.file.filename}` : null)
+  const username = (req.body.username ? req.body.username : null)
+    User.findOne({
+        where: {
+          id: id
+        }
+      })
+      .then(user => {
+        //Si image dans la requête
+        if (req.file) {
+          if (user.profilImg !== null) {
+            const fileName = user.profilImg.split('/images')[1]
+            fs.unlink(`images/${fileName}`, (err => { //Suppression de l'ancienne image
+              if (err) console.log(err);
+              else {
+                console.log("Image supprimée: " + fileName);
+              }
+            }))
+          }
+          req.body.image = `${req.protocol}://${req.get('host')}/images/${req.file.filename}`;
+        }
+        
+        if (req.body) {
+          username ? (user.username = username) : null,
+          image ? user.profilImg = image : null
+
+        user.save()
+        .then( () => res.status(201).json({msg: "Profil modifié !"}))
+        .catch(error => res.status(500).json(error))
+        }
+      })
+      .catch(error => res.status(500).json({
+        error
+      }));
+};
+
+  module.exports = { signup, login, deleteUser, editUser}

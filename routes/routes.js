@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const {createOne, getAll, getOne, updateOne, deleteOne, likeOne, getLike, getUser, getUserOne} = require('../controllers/controllers.js');
+const {createOne, getAll, getOne, updateOne, deleteOne, getUser, getUserOne} = require('../controllers/controllers.js');
 const {postComment, deleteCommentOne, getComment} = require('../controllers/comments.js');
 const auth = require('../middleware/auth.js');
 const multer = require('../middleware/multer-config.js')
@@ -18,8 +18,9 @@ router.get('/:id/comment', auth, getComment)
 
 router.get('/getUsers', auth, getUser);
 router.get('/getUserOne', auth, getUserOne);
-router.post('/:id/likeOne', auth, likeOne);
-router.get('/:id/getLike', auth, getLike);
+
+
+
 
 
 

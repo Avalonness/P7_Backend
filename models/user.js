@@ -14,6 +14,7 @@ const User = database.define('User', {
     },
     password: DataTypes.STRING,
     profilImg: DataTypes.STRING,
+    levelAccount: DataTypes.INTEGER,
 
 }, {
     Sequelize,
